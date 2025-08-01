@@ -41,8 +41,6 @@ public class OmdbService {
         if (type != null) url.queryParam("type", type);
         if (plot != null) url.queryParam("plot", plot);
 
-        String urlWithParams = url.toUriString();
-
-        return restTemplate.getForObject(urlWithParams, MovieResponse.class);
+        return restTemplate.getForObject(url.toUriString(), MovieResponse.class);
     }
 }
