@@ -41,10 +41,6 @@ Build do backend no Docker
 
 Pendências:
 
-- Testes
-- Adicionar OpenApi.
-- Adicionar os filtros de ano e tipo da produção (?y=2025&type=episode).
-- Adicionar consulta por ID.
 - Adicionar opção de detalhe de plot (curto ou completo).
 - Adicionar paginação.
 - Adicionar cache para não ficar enviando várias requisições ao OMDB.
