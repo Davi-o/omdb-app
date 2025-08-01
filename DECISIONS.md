@@ -16,14 +16,19 @@ Backend com Spring Boot (Java 21)
 
 - Usando Java 21 LTS e Spring Boot.
 - Projeto gerado via Spring Initializr.
-- Maven 4.0 está sendo usado. Nada específico, só acompanhando a versão padrão do projeto.
+- Maven 3.2.5 está sendo usado.
 
 ---
 
-Gateway com Spring WebFlux
+Gateway com Spring Mvc
 
-- Escolhido usar WebClient do Spring WebFlux para fazer as requisições HTTP.
-- Escolhi o WebClient por ser mais moderno que RestTemplate.
+- o gateway foi feito usando WebClient com spring webflux, mas acabei trocando por spring mvc
+
+- o motivo principal da troca foi por não entender direito o funcionamento do WebFlux e achar que ia acabar gastando muito tempo com isso
+
+- como a aplicação é pequena e não precisa de alta concorrência ou reatividade, decidi ir pelo jeito que já conheço
+
+- mantive o mesmo comportamento da api, só trocando as chamadas reativas por chamadas RestTemplate.
 
 ---
 

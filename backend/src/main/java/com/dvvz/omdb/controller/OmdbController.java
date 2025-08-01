@@ -1,19 +1,29 @@
 package com.dvvz.omdb.controller;
 
+import com.dvvz.omdb.model.MovieResponse;
 import com.dvvz.omdb.service.OmdbService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/")
-public class Controller {
+public class OmdbController {
 
     @Autowired
-    private OmdbService omdbService;
+    private final OmdbService omdbService;
+
+    public OmdbController(OmdbService omdbService) {
+        this.omdbService = omdbService;
+    }
 
     @GetMapping("/")
-    public Mono<String> getMovieByTitle(@RequestParam(name="t") String title){
-        return omdbService.searchByTitle(title);
+    public MovieResponse getMovie(
+            @RequestParam(name="i", required = false) String id,
+            @RequestParam(name="t", required = false) String title,
+            @RequestParam(name="y", required = false) String year,
+            @RequestParam(name="type", required = false) String type,
+            @RequestParam(name="plot", required = false) String plot
+    ){
+        return omdbService.getMovie(id, title, year, type, plot);
     }
 }
