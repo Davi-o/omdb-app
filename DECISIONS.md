@@ -38,9 +38,17 @@ Build do backend no Docker
 - Não é necessário rodar `mvn package` manualmente antes.
 
 ---
+Documentação com Swagger
+
+- Foi adicionado o Swagger/OpenAPI à aplicação para documentar os endpoints de forma automática.
+- Está usando `springdoc-openapi` (versão para Spring Boot 3).
+- A documentação está disponível em `/swagger-ui.html`.
+
+---
 
 Pendências:
 
-- Adicionar opção de detalhe de plot (curto ou completo).
-- Adicionar paginação.
-- Adicionar cache para não ficar enviando várias requisições ao OMDB.
+- Adicionar Rate-Limit.
+- Testar o cache.
+- Refinar validações e tratamento de erros.
+- Adicionar Logs.

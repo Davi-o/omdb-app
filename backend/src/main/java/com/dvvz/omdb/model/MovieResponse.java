@@ -29,10 +29,4 @@ public class MovieResponse {
     public String totalSeasons;
     public String Response;
 
-    public MovieResponse(String title, String director, String year, String imdbID) {
-        Title = title;
-        Director = director;
-        Year = year;
-        this.imdbID = imdbID;
-    }
 }

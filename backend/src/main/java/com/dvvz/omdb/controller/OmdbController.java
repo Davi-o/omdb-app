@@ -3,7 +3,11 @@ package com.dvvz.omdb.controller;
 import com.dvvz.omdb.model.MovieResponse;
 import com.dvvz.omdb.service.OmdbService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/")
@@ -25,5 +29,13 @@ public class OmdbController {
             @RequestParam(name="plot", required = false) String plot
     ){
         return omdbService.getMovie(id, title, year, type, plot);
+    }
+
+    @GetMapping("/search")
+    public List<MovieResponse> searchMovies(
+            @RequestParam(name="s", required = true) String query,
+            @RequestParam(name="page", required = false, defaultValue = "1") int page
+    ) {
+        return omdbService.searchMovies(query, page);
     }
 }
