@@ -62,20 +62,20 @@ Contexto da máquina de desenvolvimento:
 ---
 
 Pendências:
-* Backend: 
-    * Testes.[]
-    * Adicionar OpenApi. [x]
-    * Adicionar os filtros de ano e tipo da produção (?y=2025&type=episode). [x]
-    * Adicionar consulta por ID. [x]
-    * Adicionar opção de detalhe de plot (curto ou completo). [x]
-    * Adicionar paginação. [x]
-    * Adicionar cache para não ficar enviando várias requisições ao OMDB. [x]
-    * Adicionar Rate-Limit.
-    * Testar o cache.
-    * Refinar validações e tratamento de erros.
-    * Adicionar Logs.
-* Frontend:
-    * Tela de busca com filtros. [x]
-    * Listagem com poster, titulo e ano. [x]
-    * Paginação. []
-    * Mostrar detalhes ao selecionar produção. []
+- Backend: 
+    - Testes.[]
+    - Adicionar OpenApi. [x]
+    - Adicionar os filtros de ano e tipo da produção (?y=2025&type=episode). [x]
+    - Adicionar consulta por ID. [x]
+    - Adicionar opção de detalhe de plot (curto ou completo). [x]
+    - Adicionar paginação. [x]
+    - Adicionar cache para não ficar enviando várias requisições ao OMDB. [x]
+    - Adicionar Rate-Limit.
+    - Testar o cache.
+    - Refinar validações e tratamento de erros.
+    - Adicionar Logs.
+- Frontend:
+    - Tela de busca com filtros. [x]
+    - Listagem com poster, titulo e ano. [x]
+    - Paginação. []
+    - Mostrar detalhes ao selecionar produção. []
