@@ -46,9 +46,36 @@ Documentação com Swagger
 
 ---
 
-Pendências:
+Frontend com React + Bootstrap
 
-- Adicionar Rate-Limit.
-- Testar o cache.
-- Refinar validações e tratamento de erros.
-- Adicionar Logs.
+- O frontend foi criado com React e React-Bootstrap, para facilitar a criação de UI sem precisar trabalhar diretamente com CSS.
+- Inicialmente foi tentado o uso do `create-react-app`, mas ele apresentou problemas com dependências e scripts devido à versão de Node suportada no macOS Catalina (10.15).
+- Decidi então adotar o Vite, que possui menos dependências legadas, tornando a configuração mais leve e compatível com esse ambiente antigo.
+
+---
+
+Contexto da máquina de desenvolvimento:
+
+- O desenvolvimento do frontend foi iniciado utilizando um MacBook Air que não possui suporte oficial à versão atual do Docker Desktop.
+- Por esse motivo, o frontend não roda em container. Está sendo executado localmente com Node.js.
+
+---
+
+Pendências:
+* Backend: 
+    * Testes.[]
+    * Adicionar OpenApi. [x]
+    * Adicionar os filtros de ano e tipo da produção (?y=2025&type=episode). [x]
+    * Adicionar consulta por ID. [x]
+    * Adicionar opção de detalhe de plot (curto ou completo). [x]
+    * Adicionar paginação. [x]
+    * Adicionar cache para não ficar enviando várias requisições ao OMDB. [x]
+    * Adicionar Rate-Limit.
+    * Testar o cache.
+    * Refinar validações e tratamento de erros.
+    * Adicionar Logs.
+* Frontend:
+    * Tela de busca com filtros. [x]
+    * Listagem com poster, titulo e ano. [x]
+    * Paginação. []
+    * Mostrar detalhes ao selecionar produção. []
