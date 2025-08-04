@@ -77,5 +77,6 @@ Pendências:
 - Frontend:
     - Tela de busca com filtros. [x]
     - Listagem com poster, titulo e ano. [x]
-    - Paginação. []
+    - Paginação. [x]
     - Mostrar detalhes ao selecionar produção. []
+    - Adicionar feedback de carregamento. []
