@@ -51,6 +51,7 @@ Frontend com React + Bootstrap
 - O frontend foi criado com React e React-Bootstrap, para facilitar a criação de UI sem precisar trabalhar diretamente com CSS.
 - Inicialmente foi tentado o uso do `create-react-app`, mas ele apresentou problemas com dependências e scripts devido à versão de Node suportada no macOS Catalina (10.15).
 - Decidi então adotar o Vite, que possui menos dependências legadas, tornando a configuração mais leve e compatível com esse ambiente antigo.
+- Vi a necessidade de usar `react-router-dom` para fazer o roteamento entre a home com as pesquisas e os detalhes das produções.
 
 ---
 
@@ -63,20 +64,24 @@ Contexto da máquina de desenvolvimento:
 
 Pendências:
 - Backend: 
-    - Testes.[]
+    - Aumentar cobertura dos testes.[]
     - Adicionar OpenApi. [x]
     - Adicionar os filtros de ano e tipo da produção (?y=2025&type=episode). [x]
     - Adicionar consulta por ID. [x]
     - Adicionar opção de detalhe de plot (curto ou completo). [x]
     - Adicionar paginação. [x]
     - Adicionar cache para não ficar enviando várias requisições ao OMDB. [x]
-    - Adicionar Rate-Limit.
-    - Testar o cache.
-    - Refinar validações e tratamento de erros.
-    - Adicionar Logs.
+    - Adicionar Rate-Limit. []
+    - Testar o cache. []
+    - Refinar validações e tratamento de erros. []
+    - Adicionar Logs. []
 - Frontend:
     - Tela de busca com filtros. [x]
     - Listagem com poster, titulo e ano. [x]
     - Paginação. [x]
-    - Mostrar detalhes ao selecionar produção. []
-    - Adicionar feedback de carregamento. []
+    - Mostrar detalhes ao selecionar produção. [x]
+    - Adicionar feedback de carregamento. [x]
+    - Melhorar visual. []
+- Integração:
+    - Dockerizar o front. []
+    - Testar gateway. []
