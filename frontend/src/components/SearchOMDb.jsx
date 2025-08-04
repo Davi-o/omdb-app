@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Pagination, Container, Row, Col, Card, Form, Button } from 'react-bootstrap';
-
-const API_KEY = '2464f402';
+import { Link } from 'react-router-dom'
+import { Pagination, Container, Row, Col, Card, Form, Button, Spinner } from 'react-bootstrap';
 
 export default function App() {
   const [search, setSearch] = useState('');
@@ -11,13 +10,15 @@ export default function App() {
   const [page, setPage] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const fetchMovies = async () => {
     if(!search) return;
+    setLoading(true);
     
     try {
         const url = new URLSearchParams({
-            apikey: API_KEY,
+            apikey: import.meta.env.VITE_API_KEY,
             s: search,
         });
         
@@ -25,7 +26,7 @@ export default function App() {
         if(year) url.append('year', year);
         if(page) url.append('page', page);
  
-        const res = await fetch(`https://www.omdbapi.com/?${url.toString()}`);
+        const res = await fetch(`${import.meta.env.VITE_API_URL}?${url.toString()}`);
         const data = await res.json();
         
         setResults([]);
@@ -39,6 +40,8 @@ export default function App() {
     } catch (error) {
         console.log(error);
     }
+
+    setLoading(false);
   };
   
   useEffect(()=> {
@@ -98,22 +101,31 @@ export default function App() {
             variant="primary"
             className="w-100 mt-3 mt-md-0"
           >
-            Buscar
+            {loading? '...' : 'Buscar'}
           </Button>
         </Col>
       </Row>
     </Form>
+    
+    {loading && (
+        <div className='text-center text-light nt-4'>
+            <Spinner animation="border" variant="light"/>
+            <p>Buscando...</p>
+        </div>
+    )}
 
     <Row>
       {results.map((movie) => (
         <Col key={movie.imdbID} sm={6} md={4} lg={3} className="mb-4">
-          <Card className="h-100 bg-secondary text-white">
-            <Card.Img variant="top" src={movie.Poster !== "N/A" ? movie.Poster : "https://via.placeholder.com/300x445?text=Sem+Imagem"} />
-            <Card.Body>
-              <Card.Title>{movie.Title}</Card.Title>
-              <Card.Text>{movie.Year}</Card.Text>
-            </Card.Body>
-          </Card>
+            <Link to={`/movie/${movie.imdbID}`}>
+                <Card className="h-100 bg-secondary text-white">
+                <Card.Img variant="top" src={movie.Poster !== "N/A" ? movie.Poster : "https://via.placeholder.com/300x445?text=Sem+Imagem"} />
+                <Card.Body>
+                <Card.Title>{movie.Title}</Card.Title>
+                <Card.Text>{movie.Year}</Card.Text>
+                </Card.Body>
+                </Card>
+          </Link>
         </Col>
       ))}
     </Row>
