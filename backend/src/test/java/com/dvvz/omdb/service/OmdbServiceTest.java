@@ -7,7 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -41,7 +41,7 @@ class OmdbServiceTest {
     }
 
     @Test
-    void shouldReturnMovieWhenCallOmdbApi() {
+    void givenValidTitleThenReturnMovie() {
         Mockito.when(restTemplate.getForObject(
            Mockito.eq("https://api.com?apikey=123&t=matrix"),
            Mockito.eq(MovieResponse.class)
@@ -53,7 +53,19 @@ class OmdbServiceTest {
     }
 
     @Test
-    void givenImdbIdShouldReturnMovieWhenCallOmdbApi() {
+    void givenAllParamsThenReturnMovie() {
+        Mockito.when(restTemplate.getForObject(
+                Mockito.eq("https://api.com?apikey=123&i=101&t=matrix&y=1999&type=movie&plot=full"),
+                Mockito.eq(MovieResponse.class)
+        )).thenReturn(expectedMovie);
+
+        MovieResponse result = service.getMovie("101", "matrix", "1999", "movie", "full");
+
+        Assertions.assertEquals(expectedMovie, result);
+    }
+
+    @Test
+    void givenImdbIdThenReturnMovie() {
         Mockito.when(restTemplate.getForObject(
            Mockito.eq("https://api.com?apikey=123&i=101"),
            Mockito.eq(MovieResponse.class)
@@ -65,7 +77,7 @@ class OmdbServiceTest {
     }
 
     @Test
-    void givenPlotTypeShouldReturnMovieWhenCallOmdbApi() {
+    void givenPlotTypeThenReturnMovie() {
         Mockito.when(restTemplate.getForObject(
            Mockito.eq("https://api.com?apikey=123&t=matrix&plot=short"),
            Mockito.eq(MovieResponse.class)
@@ -77,20 +89,114 @@ class OmdbServiceTest {
     }
 
     @Test
-    void givenValidSearchQueryShouldReturnMovieListWhenCallOmdbApi() {
-        SearchResponse expectedResponse = new SearchResponse();
-        expectedResponse.setMovies(List.of(expectedMovie));
-
+    void givenValidSearchQueryThenReturnMovieList() {
         Mockito.when(restTemplate.getForObject(
                 Mockito.eq("https://api.com?apikey=123&s=matrix&page=1"),
                 Mockito.eq(SearchResponse.class)
         )).thenReturn(expectedResponse);
 
-        List<MovieResponse> movies = service.searchMovies("matrix",1);
+        SearchResponse movies = service.searchMovies("matrix",1);
 
         Assertions.assertNotNull(movies);
-        Assertions.assertEquals(1, movies.size());
-        Assertions.assertEquals("Matrix", movies.getFirst().Title);
+        Assertions.assertEquals(1, movies.getMovies().size());
+        Assertions.assertEquals("Matrix", movies.getMovies().getFirst().Title);
+    }
+
+    @Test
+    void givenNullResponseThenReturnEmptySearchResponse() {
+        Mockito.when(restTemplate.getForObject(
+                Mockito.anyString(),
+                Mockito.eq(SearchResponse.class)
+        )).thenReturn(null);
+
+        SearchResponse response = service.searchMovies("non-existing", 1);
+
+        Assertions.assertNotNull(response);
+        Assertions.assertNull(response.getMovies());
+    }
+
+    @Test
+    void givenNullMovieListThenReturnEmptySearchResponse() {
+        SearchResponse nullMovieListResponse = new SearchResponse();
+        nullMovieListResponse.setMovies(null);
+
+        Mockito.when(restTemplate.getForObject(
+                Mockito.anyString(),
+                Mockito.eq(SearchResponse.class)
+        )).thenReturn(nullMovieListResponse);
+
+        SearchResponse response = service.searchMovies("matrix", 1);
+
+        Assertions.assertNotNull(response);
+        Assertions.assertNull(response.getMovies());
+    }
+
+    @Test
+    void givenPageParamZeroThenShouldNotAddPageParam() {
+        Mockito.when(restTemplate.getForObject(
+                Mockito.eq("https://api.com?apikey=123&s=matrix"),
+                Mockito.eq(SearchResponse.class)
+        )).thenReturn(expectedResponse);
+
+        SearchResponse response = service.searchMovies("matrix", 0);
+
+        Assertions.assertEquals(1, response.getMovies().size());
+    }
+
+    @Test
+    void givenInvalidPlotTypeThenIgnorePlotParam() {
+        Mockito.when(restTemplate.getForObject(
+                Mockito.eq("https://api.com?apikey=123&t=matrix"),
+                Mockito.eq(MovieResponse.class)
+        )).thenReturn(expectedMovie);
+
+        MovieResponse response = service.getMovie(null, "matrix", null, null, "invalid");
+
+        Assertions.assertEquals(expectedMovie, response);
+    }
+
+    @Test
+    void givenRestTemplateFailsWhenGetMovieThenThrowException() {
+        Mockito.when(restTemplate.getForObject(
+                Mockito.anyString(),
+                Mockito.eq(MovieResponse.class)
+        )).thenThrow(new RuntimeException("Falha na OMDB"));
+
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            service.getMovie("101", null, null, null, null);
+        });
+    }
+
+    @Test
+    void givenRestTemplateFailsWhenSearchMoviesThenThrowException() {
+        Mockito.when(restTemplate.getForObject(
+                Mockito.anyString(),
+                Mockito.eq(SearchResponse.class)
+        )).thenThrow(new RuntimeException("Erro OMDB"));
+
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            service.searchMovies("matrix", 1);
+        });
+    }
+
+    @Test
+    void givenRestClientExceptionWhenGetMovieThenThrowsException() {
+        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.eq(MovieResponse.class)))
+                .thenThrow(new RestClientException("Erro."));
+
+        Assertions.assertThrows(RestClientException.class, () -> {
+            service.getMovie("id", "title", "year", "type", "plot");
+        });
+    }
+
+    @Test
+    void givenRestClientExceptionWhenSearchMoviesThenThrowsException() {
+        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.eq(SearchResponse.class)))
+                .thenThrow(new RestClientException("Erro."));
+
+        Assertions.assertThrows(RestClientException.class, () -> {
+            service.searchMovies("matrix", 1);
+        });
     }
 
 }

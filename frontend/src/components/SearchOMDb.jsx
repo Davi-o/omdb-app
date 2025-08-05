@@ -26,19 +26,16 @@ export default function App() {
         if(year) url.append('year', year);
         if(page) url.append('page', page);
  
-        const res = await fetch(`${import.meta.env.VITE_API_URL}?${url.toString()}`);
+        const res = await fetch(`${import.meta.env.VITE_API_URL}search?${url.toString()}`);
         const data = await res.json();
-        
-        setResults([]);
 
-        if(data.Response) {
-            setResults(data.Search || []);
+        if(Object.keys(data).length > 0) {
+            setResults(data.Search);
             setTotalResults(parseInt(data.totalResults));
             setTotalPages(parseInt(Math.ceil(data.totalResults/10) || 0));
         }
-
     } catch (error) {
-        console.log(error);
+      console.log(error);
     }
 
     setLoading(false);
@@ -106,7 +103,14 @@ export default function App() {
         </Col>
       </Row>
     </Form>
-    
+
+    {!loading && results === null && (
+      <div className="text-center text-light mt-4">
+        <h5>Nenhum resultado encontrado para sua busca.</h5>
+        <p>Tente ajustar o título, tipo ou ano.</p>
+      </div>
+    )}
+
     {loading && (
         <div className='text-center text-light nt-4'>
             <Spinner animation="border" variant="light"/>
@@ -114,25 +118,28 @@ export default function App() {
         </div>
     )}
 
-    <Row>
-      {results.map((movie) => (
-        <Col key={movie.imdbID} sm={6} md={4} lg={3} className="mb-4">
-            <Link to={`/movie/${movie.imdbID}`}>
-                <Card className="h-100 bg-transparent text-white border-0 position-relative overflow-hidden">
-                <Card.Img 
-                  className='w-100 h-100 object-fit-cover'
-                  style={{minHeight: '300px'}}
-                  src={movie.Poster !== "N/A" ? movie.Poster : "https://via.placeholder.com/300x445?text=Sem+Imagem"} 
-                />
-                <Card.ImgOverlay className='bg-black bg-opacity-10 d-flex flex-column justify-content-end p-0'>
-                  <Card.Title className='bg-black bg-opacity-50 fw-bold fs-5 p-1'>{movie.Title} ({movie.Year})</Card.Title>
-                </Card.ImgOverlay>
-                </Card>
-          </Link>
-        </Col>
-      ))}
-    </Row>
-    {totalResults > 0 && (
+    {!loading && totalResults > 0 && (
+      <Row>
+        {results.map((movie) => (
+          <Col key={movie.imdbID} sm={6} md={4} lg={3} className="mb-4">
+              <Link to={`/movie/${movie.imdbID}`}>
+                  <Card className="h-100 bg-transparent text-white border-0 position-relative overflow-hidden">
+                  <Card.Img 
+                    className='w-100 h-100 object-fit-cover'
+                    style={{minHeight: '300px'}}
+                    src={movie.Poster !== "N/A" ? movie.Poster : "https://via.placeholder.com/300x445?text=Sem+Imagem"} 
+                  />
+                  <Card.ImgOverlay className='bg-black bg-opacity-10 d-flex flex-column justify-content-end p-0'>
+                    <Card.Title className='bg-black bg-opacity-50 fw-bold fs-5 p-1'>{movie.Title} ({movie.Year})</Card.Title>
+                  </Card.ImgOverlay>
+                  </Card>
+            </Link>
+          </Col>
+        ))}
+      </Row>
+    )}
+    
+    {loading && totalResults > 0 && (
         <Pagination className='justify-content-center mt-4'>
             <Pagination.Prev
               onClick={() => setPage((prev)=> Math.max(prev -1, 1))}

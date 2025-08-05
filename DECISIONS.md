@@ -38,11 +38,23 @@ Build do backend no Docker
 - Não é necessário rodar `mvn package` manualmente antes.
 
 ---
+
+Build do frontend no Docker
+
+- O Dockerfile do frontend está usando um container Nginx para servir os arquivos estáticos.
+
+---
+
 Documentação com Swagger
 
 - Foi adicionado o Swagger/OpenAPI à aplicação para documentar os endpoints de forma automática.
 - Está usando `springdoc-openapi` (versão para Spring Boot 3).
 - A documentação está disponível em `/swagger-ui.html`.
+
+---
+
+Logs
+- Os estão seguindo um padrão de `entity.action.status field='value'` ou `entity.action.field='value'`.
 
 ---
 
@@ -58,13 +70,13 @@ Frontend com React + Bootstrap
 Contexto da máquina de desenvolvimento:
 
 - O desenvolvimento do frontend foi iniciado utilizando um MacBook Air que não possui suporte oficial à versão atual do Docker Desktop.
-- Por esse motivo, o frontend não roda em container. Está sendo executado localmente com Node.js.
+- Posteriormente voltei a desenvolver na minha maquina com Linux Mint, onde pude então fazer o docker-compose integrando as duas aplicações.
 
 ---
 
 Pendências:
 - Backend: 
-    - Aumentar cobertura dos testes.[]
+    - Aumentar cobertura dos testes.[x]
     - Adicionar OpenApi. [x]
     - Adicionar os filtros de ano e tipo da produção (?y=2025&type=episode). [x]
     - Adicionar consulta por ID. [x]
@@ -72,9 +84,9 @@ Pendências:
     - Adicionar paginação. [x]
     - Adicionar cache para não ficar enviando várias requisições ao OMDB. [x]
     - Adicionar Rate-Limit. []
-    - Testar o cache. []
-    - Refinar validações e tratamento de erros. []
-    - Adicionar Logs. []
+    - Testar o cache. [x]
+    - Refinar validações e tratamento de erros. [x]
+    - Adicionar Logs. [x]
 - Frontend:
     - Tela de busca com filtros. [x]
     - Listagem com poster, titulo e ano. [x]
@@ -84,5 +96,5 @@ Pendências:
     - Melhorar visual. [x]
     - Salvar busca ao sair do detalhe da produção. []
 - Integração:
-    - Dockerizar o front. []
-    - Testar gateway. []
+    - Dockerizar o front. [x]
+    - Testar gateway. [x]

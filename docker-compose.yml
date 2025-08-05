@@ -9,5 +9,18 @@ services:
     networks:
       - app-network
 
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://backend:8080
+        VITE_API_KEY: sua-chave-aqui
+    ports:
+      - "3000:80"
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
 networks:
   app-network:
