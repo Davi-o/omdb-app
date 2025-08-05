@@ -81,7 +81,8 @@ Pendências:
     - Paginação. [x]
     - Mostrar detalhes ao selecionar produção. [x]
     - Adicionar feedback de carregamento. [x]
-    - Melhorar visual. []
+    - Melhorar visual. [x]
+    - Salvar busca ao sair do detalhe da produção. []
 - Integração:
     - Dockerizar o front. []
     - Testar gateway. []

@@ -7,9 +7,7 @@ import SearchOMDb from './components/SearchOMDb'
 function App() {
 
   return (
-    <div>
-      <SearchOMDb />
-    </div>
+    <SearchOMDb />
   )
 }
 

@@ -38,25 +38,32 @@ export default function DetailsOMDb() {
   if (!details || details.Response === "False") {
     return <Container className="text-light">Detalhes não encontrados.</Container>;
   }
-
   return (
-    <Container className="py-4 text-white">
-      <Button variant="secondary" onClick={handleBack} className="mb-3">
-        Voltar
+    <Container fluid className="text-white py-4 px-5 min-vh-100">
+      <Button variant="link" onClick={handleBack} className="text-white mb-4">
+        ← Voltar
       </Button>
-      <Card className="bg-dark text-white">
-        <Card.Img variant="top" src={details.Poster} />
-        <Card.Body>
-          <Card.Title>{details.Title}</Card.Title>
-          <Card.Text>
-            <strong>Ano:</strong> {details.Year}<br />
-            <strong>Gênero:</strong> {details.Genre}<br />
-            <strong>Diretor:</strong> {details.Director}<br />
-            <strong>Elenco:</strong> {details.Actors}<br />
-            <strong>Enredo:</strong> {details.Plot}
-          </Card.Text>
-        </Card.Body>
-      </Card>
+  
+      <div className="d-flex flex-column flex-md-row gap-4 align-items-start">
+        <div className="flex-shrink-0" style={{ maxWidth: '350px' }}>
+          <img
+            src={details.Poster}
+            alt={details.Title}
+            className="img-fluid rounded shadow"
+          />
+        </div>
+  
+        <div className="flex-grow-1">
+          <h1 className="display-5">{details.Title}</h1>
+          <p className="fs-5 text-secondary mb-2">{details.Year}</p>
+  
+          <p><strong>Nota:</strong> {details.imdbRating}</p>
+          <p><strong>Gênero:</strong> {details.Genre}</p>
+          <p><strong>Diretor:</strong> {details.Director}</p>
+          <p><strong>Elenco:</strong> {details.Actors}</p>
+          <p><strong>Enredo:</strong> {details.Plot}</p>
+        </div>
+      </div>
     </Container>
-  );
+  );  
 }

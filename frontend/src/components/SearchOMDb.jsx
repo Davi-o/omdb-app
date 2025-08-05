@@ -59,7 +59,7 @@ export default function App() {
   }
 
  return (
-  <Container className="py-4 bg-dark text-white min-vh-100">
+  <Container fluid className="py-4 text-white min-vh-100">
     <Form
       onSubmit={handleSearch}
       className="mb-4"
@@ -98,8 +98,8 @@ export default function App() {
         <Col xs={12} md={3}>
           <Button
             type="submit"
-            variant="primary"
-            className="w-100 mt-3 mt-md-0"
+            variant="secondary"
+            className="color-grey w-100 mt-3 mt-md-0"
           >
             {loading? '...' : 'Buscar'}
           </Button>
@@ -118,12 +118,15 @@ export default function App() {
       {results.map((movie) => (
         <Col key={movie.imdbID} sm={6} md={4} lg={3} className="mb-4">
             <Link to={`/movie/${movie.imdbID}`}>
-                <Card className="h-100 bg-secondary text-white">
-                <Card.Img variant="top" src={movie.Poster !== "N/A" ? movie.Poster : "https://via.placeholder.com/300x445?text=Sem+Imagem"} />
-                <Card.Body>
-                <Card.Title>{movie.Title}</Card.Title>
-                <Card.Text>{movie.Year}</Card.Text>
-                </Card.Body>
+                <Card className="h-100 bg-transparent text-white border-0 position-relative overflow-hidden">
+                <Card.Img 
+                  className='w-100 h-100 object-fit-cover'
+                  style={{minHeight: '300px'}}
+                  src={movie.Poster !== "N/A" ? movie.Poster : "https://via.placeholder.com/300x445?text=Sem+Imagem"} 
+                />
+                <Card.ImgOverlay className='bg-black bg-opacity-10 d-flex flex-column justify-content-end p-0'>
+                  <Card.Title className='bg-black bg-opacity-50 fw-bold fs-5 p-1'>{movie.Title} ({movie.Year})</Card.Title>
+                </Card.ImgOverlay>
                 </Card>
           </Link>
         </Col>
@@ -132,12 +135,12 @@ export default function App() {
     {totalResults > 0 && (
         <Pagination className='justify-content-center mt-4'>
             <Pagination.Prev
-                onClick={() => setPage((prev)=> Math.max(prev -1, 1))}
-                disabled={page === 1}
+              onClick={() => setPage((prev)=> Math.max(prev -1, 1))}
+              disabled={page === 1}
             />
             <Pagination.Item
-                active={page === 1}
-                onClick={() => setPage(1)}
+              active={page === 1}
+              onClick={() => setPage(1)}
             >
                 1
             </Pagination.Item>
@@ -145,22 +148,24 @@ export default function App() {
             .filter((pageIndex) => pageIndex !== 1 && pageIndex !== totalPages && Math.abs(pageIndex - page) <= 3)
             .map((pageIndex) => (
                 <Pagination.Item
-                    key={pageIndex}
-                    active={pageIndex === page}
-                    onClick={() => setPage(pageIndex)}
+                  key={pageIndex}
+                  active={pageIndex === page}
+                  onClick={() => setPage(pageIndex)}
                 >
-                    {pageIndex}
+                  {pageIndex}
                 </Pagination.Item>
             ))}
             {page < totalPages -3 && <Pagination.Ellipsis disabled />}
             {page !== totalPages && (
-                <Pagination.Item onClick={() => setPage(totalPages)}>
-                    {totalPages}
-                </Pagination.Item>
+              <Pagination.Item 
+                onClick={() => setPage(totalPages)
+              }>
+                {totalPages}
+              </Pagination.Item>
             )}
             <Pagination.Next
-                onClick={() => setPage((prev) => setPage(Math.min(prev + 1, totalPages)))}
-                disabled={page === totalPages} 
+              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={page === totalPages} 
             />
         </Pagination>
     )}
