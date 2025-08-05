@@ -36,13 +36,5 @@ Na raiz do projeto (onde está o docker-compose.yml):
 ```
 docker-compose up --build
 ```
-A aplicação estará disponível em: http://localhost:8080
-
-## Exemplo de uso
-
-A aplicação aceitará parâmetros na URL, que serão então repassado ao OMDB.
-
-Exemplo:
-```
-"http://localhost:8080/?t=matrix"
-```
+A aplicação estará disponível em: http://localhost:3000
+O Swagger pode ser acessada em: http://localhost:8080/swagger-ui.html
