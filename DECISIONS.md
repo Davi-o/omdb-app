@@ -58,6 +58,17 @@ Logs
 
 ---
 
+Refatoração do Backend motivada pela Integração com o Frontend
+
+- Como o frontend foi feito separado do backend, quando fui integrar de verdade, percebi uma falha importante no gateway.
+- Antes, ele só aceitava a URL no formato ?s={valor}, ignorando qualquer outro parâmetro como type, year ou paginação.
+- Isso causava vários problemas, porque o frontend precisava enviar esses filtros, mas o backend simplesmente não se importava com eles.
+- Por isso precisei refatorar o backend para corrigir essa questão da URL, tratando todos os parâmetros que o frontend manda.
+- Também aproveitei para deixar o código da service mais limpo.
+- Essa mudança foi essencial pra garantir que frontend e backend funcionem direitinho juntos, sem perder os filtros.
+
+---
+
 Frontend com React + Bootstrap
 
 - O frontend foi criado com React e React-Bootstrap, para facilitar a criação de UI sem precisar trabalhar diretamente com CSS.

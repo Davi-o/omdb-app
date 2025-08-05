@@ -4,8 +4,6 @@ import { Container, Card, Spinner, Button } from 'react-bootstrap';
 
 
 export default function DetailsOMDb() {
-  const API_KEY = import.meta.env.VITE_API_KEY;
-  const API_URL = import.meta.env.VITE_API_URL;
   const { imdbId } = useParams();
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -18,7 +16,7 @@ export default function DetailsOMDb() {
   useEffect(() => {
     const fetchDetails = async () => {
       setLoading(true);
-      const res = await fetch(`${API_URL}?apikey=${API_KEY}&i=${imdbId}&plot=full`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/?&id=${imdbId}`);
       const data = await res.json();
       setDetails(data);
       setLoading(false);

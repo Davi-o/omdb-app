@@ -1,5 +1,6 @@
 package com.dvvz.omdb.service;
 
+import com.dvvz.omdb.config.OmdbParamMap;
 import com.dvvz.omdb.model.MovieResponse;
 import com.dvvz.omdb.model.SearchResponse;
 import org.junit.jupiter.api.Assertions;
@@ -10,7 +11,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SpringBootTest
 class OmdbServiceTest {
@@ -32,11 +36,21 @@ class OmdbServiceTest {
         expectedResponse = new SearchResponse();
         expectedResponse.setMovies(List.of(expectedMovie));
 
+        OmdbParamMap paramMap = Mockito.mock(OmdbParamMap.class);
+        Mockito.when(paramMap.getParamMapping()).thenReturn(Map.of(
+                "title", "t",
+                "year", "y",
+                "type", "type",
+                "page", "page",
+                "s", "s"
+        ));
+
         service = new OmdbService(
                 restTemplate,
                 "https://api.com",
                 "123",
-                new String[]{"short", "full"}
+                new String[]{"short", "full"},
+                paramMap
         );
     }
 
@@ -47,7 +61,7 @@ class OmdbServiceTest {
            Mockito.eq(MovieResponse.class)
         )).thenReturn(expectedMovie);
 
-        MovieResponse result = service.getMovie(null, "matrix", null,null,null);
+        MovieResponse result = service.getMovie(null, "matrix", null);
 
         Assertions.assertEquals(expectedMovie, result);
     }
@@ -55,47 +69,25 @@ class OmdbServiceTest {
     @Test
     void givenAllParamsThenReturnMovie() {
         Mockito.when(restTemplate.getForObject(
-                Mockito.eq("https://api.com?apikey=123&i=101&t=matrix&y=1999&type=movie&plot=full"),
+                Mockito.eq("https://api.com?apikey=123&i=101&t=matrix&plot=full"),
                 Mockito.eq(MovieResponse.class)
         )).thenReturn(expectedMovie);
 
-        MovieResponse result = service.getMovie("101", "matrix", "1999", "movie", "full");
-
-        Assertions.assertEquals(expectedMovie, result);
-    }
-
-    @Test
-    void givenImdbIdThenReturnMovie() {
-        Mockito.when(restTemplate.getForObject(
-           Mockito.eq("https://api.com?apikey=123&i=101"),
-           Mockito.eq(MovieResponse.class)
-        )).thenReturn(expectedMovie);
-
-        MovieResponse result = service.getMovie("101", null, null,null,null);
-
-        Assertions.assertEquals(expectedMovie, result);
-    }
-
-    @Test
-    void givenPlotTypeThenReturnMovie() {
-        Mockito.when(restTemplate.getForObject(
-           Mockito.eq("https://api.com?apikey=123&t=matrix&plot=short"),
-           Mockito.eq(MovieResponse.class)
-        )).thenReturn(expectedMovie);
-
-        MovieResponse result = service.getMovie(null, "matrix", null,null,"short");
+        MovieResponse result = service.getMovie("101", "matrix", "full");
 
         Assertions.assertEquals(expectedMovie, result);
     }
 
     @Test
     void givenValidSearchQueryThenReturnMovieList() {
+        Map<String, String> queryParams = Map.of("title", "matrix");
+
         Mockito.when(restTemplate.getForObject(
-                Mockito.eq("https://api.com?apikey=123&s=matrix&page=1"),
+                Mockito.eq("https://api.com?apikey=123&t=matrix&page=1"),
                 Mockito.eq(SearchResponse.class)
         )).thenReturn(expectedResponse);
 
-        SearchResponse movies = service.searchMovies("matrix",1);
+        SearchResponse movies = service.searchMovies(queryParams, 1);
 
         Assertions.assertNotNull(movies);
         Assertions.assertEquals(1, movies.getMovies().size());
@@ -103,13 +95,49 @@ class OmdbServiceTest {
     }
 
     @Test
+    void givenEmptyOrNullValuesThenParamsAreIgnored() {
+        Map<String, String> queryParams = Map.of(
+                "title", "matrix",
+                "year", "",
+                "type", ""
+        );
+
+        Mockito.when(restTemplate.getForObject(
+                Mockito.eq("https://api.com?apikey=123&t=matrix&page=1"),
+                Mockito.eq(SearchResponse.class)
+        )).thenReturn(expectedResponse);
+
+        SearchResponse movies = service.searchMovies(queryParams, 1);
+
+        Assertions.assertNotNull(movies);
+        Assertions.assertEquals(1, movies.getMovies().size());
+    }
+
+    @Test
+    void givenPageParamZeroThenShouldNotAddPageParam() {
+        Map<String, String> queryParams = Map.of("title", "matrix");
+
+        Mockito.when(restTemplate.getForObject(
+                Mockito.eq("https://api.com?apikey=123&t=matrix"),
+                Mockito.eq(SearchResponse.class)
+        )).thenReturn(expectedResponse);
+
+        SearchResponse response = service.searchMovies(queryParams, 0);
+
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(1, response.getMovies().size());
+    }
+
+    @Test
     void givenNullResponseThenReturnEmptySearchResponse() {
+        Map<String, String> queryParams = Map.of("title", "non-existing");
+
         Mockito.when(restTemplate.getForObject(
                 Mockito.anyString(),
                 Mockito.eq(SearchResponse.class)
         )).thenReturn(null);
 
-        SearchResponse response = service.searchMovies("non-existing", 1);
+        SearchResponse response = service.searchMovies(queryParams, 1);
 
         Assertions.assertNotNull(response);
         Assertions.assertNull(response.getMovies());
@@ -120,39 +148,17 @@ class OmdbServiceTest {
         SearchResponse nullMovieListResponse = new SearchResponse();
         nullMovieListResponse.setMovies(null);
 
+        Map<String, String> queryParams = Map.of("title", "matrix");
+
         Mockito.when(restTemplate.getForObject(
                 Mockito.anyString(),
                 Mockito.eq(SearchResponse.class)
         )).thenReturn(nullMovieListResponse);
 
-        SearchResponse response = service.searchMovies("matrix", 1);
+        SearchResponse response = service.searchMovies(queryParams, 1);
 
         Assertions.assertNotNull(response);
         Assertions.assertNull(response.getMovies());
-    }
-
-    @Test
-    void givenPageParamZeroThenShouldNotAddPageParam() {
-        Mockito.when(restTemplate.getForObject(
-                Mockito.eq("https://api.com?apikey=123&s=matrix"),
-                Mockito.eq(SearchResponse.class)
-        )).thenReturn(expectedResponse);
-
-        SearchResponse response = service.searchMovies("matrix", 0);
-
-        Assertions.assertEquals(1, response.getMovies().size());
-    }
-
-    @Test
-    void givenInvalidPlotTypeThenIgnorePlotParam() {
-        Mockito.when(restTemplate.getForObject(
-                Mockito.eq("https://api.com?apikey=123&t=matrix"),
-                Mockito.eq(MovieResponse.class)
-        )).thenReturn(expectedMovie);
-
-        MovieResponse response = service.getMovie(null, "matrix", null, null, "invalid");
-
-        Assertions.assertEquals(expectedMovie, response);
     }
 
     @Test
@@ -163,19 +169,21 @@ class OmdbServiceTest {
         )).thenThrow(new RuntimeException("Falha na OMDB"));
 
         Assertions.assertThrows(RuntimeException.class, () -> {
-            service.getMovie("101", null, null, null, null);
+            service.getMovie("101", null, null);
         });
     }
 
     @Test
     void givenRestTemplateFailsWhenSearchMoviesThenThrowException() {
+        Map<String, String> queryParams = Map.of("title", "matrix");
+
         Mockito.when(restTemplate.getForObject(
                 Mockito.anyString(),
                 Mockito.eq(SearchResponse.class)
         )).thenThrow(new RuntimeException("Erro OMDB"));
 
         Assertions.assertThrows(RuntimeException.class, () -> {
-            service.searchMovies("matrix", 1);
+            service.searchMovies(queryParams, 1);
         });
     }
 
@@ -185,18 +193,19 @@ class OmdbServiceTest {
                 .thenThrow(new RestClientException("Erro."));
 
         Assertions.assertThrows(RestClientException.class, () -> {
-            service.getMovie("id", "title", "year", "type", "plot");
+            service.getMovie("id", "title", null);
         });
     }
 
     @Test
     void givenRestClientExceptionWhenSearchMoviesThenThrowsException() {
+        Map<String, String> queryParams = Map.of("title", "matrix");
+
         Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.eq(SearchResponse.class)))
                 .thenThrow(new RestClientException("Erro."));
 
         Assertions.assertThrows(RestClientException.class, () -> {
-            service.searchMovies("matrix", 1);
+            service.searchMovies(queryParams, 1);
         });
     }
-
 }

@@ -20,19 +20,19 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(HttpClientErrorException.class)
     public ResponseEntity<Object> handleHttpClientError(HttpClientErrorException ex) {
-        logger.error("Erro ao consumir OMDB: {}", ex.getMessage());
+        logger.error("api.use.error={}", ex.getMessage());
         return ResponseEntity.status(ex.getStatusCode()).body(ex.getResponseBodyAsString());
     }
 
     @ExceptionHandler(RestClientException.class)
     public ResponseEntity<Object> handleRestClient(RestClientException ex) {
-        logger.error("Erro ao acessar OMDB: {}", ex.getMessage(), ex);
+        logger.error("api.access.error={}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Erro ao acessar serviço externo OMDB.");
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGenericException(Exception ex) {
-        logger.error("Erro inesperado: {}", ex.getMessage(), ex);
+        logger.error("gateway.server.error={}", ex.getMessage(), ex);
         Map<String, Object> body = new HashMap<>();
         body.put("error", "Erro interno no servidor");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
