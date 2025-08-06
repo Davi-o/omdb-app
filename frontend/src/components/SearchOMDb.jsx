@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Pagination, Container, Row, Col, Card, Form, Button, Spinner } from 'react-bootstrap';
 
-export default function App() {
+export default function SearchOMDb() {
   const [title, setTitle] = useState('');
   const [search, setSearch] = useState('');
   const [results, setResults] = useState([]);
@@ -13,45 +13,70 @@ export default function App() {
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const fetchMovies = async () => {
-    if (!search) return;
-    setLoading(true);
-
-    try {
-      const params = new URLSearchParams();
-
-      if (search) params.append('title', search);
-      if (type) params.append('type', type);
-      if (year) params.append('year', year);
-      if (page) params.append('page', page);
-
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/search?${params.toString()}`);
-      const data = await res.json();
-
-      if (data && data.Search) {
-        setResults(data.Search);
-        setTotalResults(parseInt(data.totalResults, 10));
-        setTotalPages(Math.ceil(data.totalResults / 10));
-      } else {
-        setResults([]);
-        setTotalResults(0);
-        setTotalPages(0);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-
-    setLoading(false);
-  };
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+
+    const queryTitle = params.get('title') || '';
+    const queryType = params.get('type') || '';
+    const queryYear = params.get('year') || '';
+    const queryPage = parseInt(params.get('page') || '1', 10);
+
+    setTitle(queryTitle);
+    setSearch(queryTitle);
+    setType(queryType);
+    setYear(queryYear);
+    setPage(queryPage);
+
+    const fetchMovies = async () => {
+      if (!queryTitle) return;
+      setLoading(true);
+
+      try {
+        const searchParams = new URLSearchParams();
+        if (queryTitle) searchParams.append('title', queryTitle);
+        if (queryType) searchParams.append('type', queryType);
+        if (queryYear) searchParams.append('year', queryYear);
+        if (queryPage) searchParams.append('page', queryPage);
+
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/search?${searchParams.toString()}`);
+        const data = await res.json();
+
+        if (data && data.Search) {
+          setResults(data.Search);
+          setTotalResults(parseInt(data.totalResults, 10));
+          setTotalPages(Math.ceil(data.totalResults / 10));
+        } else {
+          setResults([]);
+          setTotalResults(0);
+          setTotalPages(0);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+
+      setLoading(false);
+    };
+
     fetchMovies();
-  }, [search, type, year, page]);
+  }, [location.search]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setPage(1);
-    setSearch(title.trim());
+    const params = new URLSearchParams();
+    if (title) params.set('title', title.trim());
+    if (type) params.set('type', type);
+    if (year) params.set('year', year);
+    params.set('page', 1);
+    navigate({ pathname: '/', search: params.toString() });
+  };
+
+  const handlePageChange = (newPage) => {
+    const params = new URLSearchParams(location.search);
+    params.set('page', newPage);
+    navigate({ pathname: '/', search: params.toString() });
   };
 
   return (
@@ -96,7 +121,7 @@ export default function App() {
         </Row>
       </Form>
 
-      {!loading && results.length === 0 && (
+      {!loading && search && results.length === 0 && (
         <div className="text-center text-light mt-4">
           <h5>Nenhum resultado encontrado para sua busca.</h5>
           <p>Tente ajustar o título, tipo ou ano.</p>
@@ -114,7 +139,10 @@ export default function App() {
         <Row>
           {results.map((movie) => (
             <Col key={movie.imdbID} sm={6} md={4} lg={3} className="mb-4">
-              <Link to={`/movie/${movie.imdbID}`}>
+              <Link
+                to={`/movie/${movie.imdbID}`}
+                state={{ from: location.pathname + location.search }}
+              >
                 <Card className="h-100 bg-transparent text-white border-0 position-relative overflow-hidden">
                   <Card.Img
                     className="w-100 h-100 object-fit-cover"
@@ -135,22 +163,22 @@ export default function App() {
 
       {!loading && totalResults > 0 && (
         <Pagination className="justify-content-center mt-4">
-          <Pagination.Prev onClick={() => setPage((prev) => Math.max(prev - 1, 1))} disabled={page === 1} />
-          <Pagination.Item active={page === 1} onClick={() => setPage(1)}>
+          <Pagination.Prev onClick={() => handlePageChange(Math.max(page - 1, 1))} disabled={page === 1} />
+          <Pagination.Item active={page === 1} onClick={() => handlePageChange(1)}>
             1
           </Pagination.Item>
           {Array.from({ length: totalPages }, (_, i) => i + 1)
             .filter((pageIndex) => pageIndex !== 1 && pageIndex !== totalPages && Math.abs(pageIndex - page) <= 3)
             .map((pageIndex) => (
-              <Pagination.Item key={pageIndex} active={pageIndex === page} onClick={() => setPage(pageIndex)}>
+              <Pagination.Item key={pageIndex} active={pageIndex === page} onClick={() => handlePageChange(pageIndex)}>
                 {pageIndex}
               </Pagination.Item>
             ))}
           {page < totalPages - 3 && <Pagination.Ellipsis disabled />}
           {page !== totalPages && (
-            <Pagination.Item onClick={() => setPage(totalPages)}>{totalPages}</Pagination.Item>
+            <Pagination.Item onClick={() => handlePageChange(totalPages)}>{totalPages}</Pagination.Item>
           )}
-          <Pagination.Next onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))} disabled={page === totalPages} />
+          <Pagination.Next onClick={() => handlePageChange(Math.min(page + 1, totalPages))} disabled={page === totalPages} />
         </Pagination>
       )}
     </Container>

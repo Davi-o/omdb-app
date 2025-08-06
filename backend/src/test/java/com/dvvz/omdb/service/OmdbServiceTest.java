@@ -1,31 +1,32 @@
 package com.dvvz.omdb.service;
 
 import com.dvvz.omdb.config.OmdbParamMap;
+import com.dvvz.omdb.exception.RateLimitExceededException;
 import com.dvvz.omdb.model.MovieResponse;
 import com.dvvz.omdb.model.SearchResponse;
+import io.github.bucket4j.Bucket;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
-@SpringBootTest
 class OmdbServiceTest {
 
     private RestTemplate restTemplate;
     private MovieResponse expectedMovie;
     private SearchResponse expectedResponse;
     private OmdbService service;
+    private Bucket bucket;
 
     @BeforeEach
-    void setup(){
+    void setup() {
         restTemplate = Mockito.mock(RestTemplate.class);
 
         expectedMovie = new MovieResponse();
@@ -45,20 +46,24 @@ class OmdbServiceTest {
                 "s", "s"
         ));
 
+        bucket = Mockito.mock(Bucket.class);
+        Mockito.when(bucket.tryConsume(1)).thenReturn(true);
+
         service = new OmdbService(
                 restTemplate,
                 "https://api.com",
                 "123",
                 new String[]{"short", "full"},
-                paramMap
+                paramMap,
+                bucket
         );
     }
 
     @Test
     void givenValidTitleThenReturnMovie() {
         Mockito.when(restTemplate.getForObject(
-           Mockito.eq("https://api.com?apikey=123&t=matrix"),
-           Mockito.eq(MovieResponse.class)
+                Mockito.anyString(),
+                Mockito.eq(MovieResponse.class)
         )).thenReturn(expectedMovie);
 
         MovieResponse result = service.getMovie(null, "matrix", null);
@@ -69,7 +74,7 @@ class OmdbServiceTest {
     @Test
     void givenAllParamsThenReturnMovie() {
         Mockito.when(restTemplate.getForObject(
-                Mockito.eq("https://api.com?apikey=123&i=101&t=matrix&plot=full"),
+                Mockito.anyString(),
                 Mockito.eq(MovieResponse.class)
         )).thenReturn(expectedMovie);
 
@@ -83,7 +88,7 @@ class OmdbServiceTest {
         Map<String, String> queryParams = Map.of("title", "matrix");
 
         Mockito.when(restTemplate.getForObject(
-                Mockito.eq("https://api.com?apikey=123&t=matrix&page=1"),
+                Mockito.argThat(uri -> uri.toString().contains("t=matrix") && uri.toString().contains("page=1")),
                 Mockito.eq(SearchResponse.class)
         )).thenReturn(expectedResponse);
 
@@ -92,6 +97,14 @@ class OmdbServiceTest {
         Assertions.assertNotNull(movies);
         Assertions.assertEquals(1, movies.getMovies().size());
         Assertions.assertEquals("Matrix", movies.getMovies().getFirst().Title);
+
+        ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+        Mockito.verify(restTemplate).getForObject(uriCaptor.capture(), Mockito.eq(SearchResponse.class));
+
+        String capturedUri = uriCaptor.getValue().toString();
+        Assertions.assertTrue(capturedUri.contains("apikey=123"));
+        Assertions.assertTrue(capturedUri.contains("t=matrix"));
+        Assertions.assertTrue(capturedUri.contains("page=1"));
     }
 
     @Test
@@ -103,7 +116,7 @@ class OmdbServiceTest {
         );
 
         Mockito.when(restTemplate.getForObject(
-                Mockito.eq("https://api.com?apikey=123&t=matrix&page=1"),
+                Mockito.any(URI.class),
                 Mockito.eq(SearchResponse.class)
         )).thenReturn(expectedResponse);
 
@@ -111,6 +124,18 @@ class OmdbServiceTest {
 
         Assertions.assertNotNull(movies);
         Assertions.assertEquals(1, movies.getMovies().size());
+
+        ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+        Mockito.verify(restTemplate).getForObject(uriCaptor.capture(), Mockito.eq(SearchResponse.class));
+
+        String uri = uriCaptor.getValue().toString();
+
+        Assertions.assertTrue(uri.contains("apikey=123"));
+        Assertions.assertTrue(uri.contains("&t=matrix"));
+        Assertions.assertTrue(uri.contains("&page=1"));
+
+        Assertions.assertFalse(uri.contains("&y="));
+        Assertions.assertFalse(uri.contains("&type="));
     }
 
     @Test
@@ -118,7 +143,7 @@ class OmdbServiceTest {
         Map<String, String> queryParams = Map.of("title", "matrix");
 
         Mockito.when(restTemplate.getForObject(
-                Mockito.eq("https://api.com?apikey=123&t=matrix"),
+                Mockito.any(URI.class),
                 Mockito.eq(SearchResponse.class)
         )).thenReturn(expectedResponse);
 
@@ -126,7 +151,16 @@ class OmdbServiceTest {
 
         Assertions.assertNotNull(response);
         Assertions.assertEquals(1, response.getMovies().size());
+
+        ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+        Mockito.verify(restTemplate).getForObject(uriCaptor.capture(), Mockito.eq(SearchResponse.class));
+        String uri = uriCaptor.getValue().toString();
+
+        Assertions.assertTrue(uri.contains("apikey=123"));
+        Assertions.assertTrue(uri.contains("&t=matrix"));
+        Assertions.assertFalse(uri.contains("&page="));
     }
+
 
     @Test
     void givenNullResponseThenReturnEmptySearchResponse() {
@@ -178,7 +212,7 @@ class OmdbServiceTest {
         Map<String, String> queryParams = Map.of("title", "matrix");
 
         Mockito.when(restTemplate.getForObject(
-                Mockito.anyString(),
+                Mockito.any(URI.class),
                 Mockito.eq(SearchResponse.class)
         )).thenThrow(new RuntimeException("Erro OMDB"));
 
@@ -201,11 +235,27 @@ class OmdbServiceTest {
     void givenRestClientExceptionWhenSearchMoviesThenThrowsException() {
         Map<String, String> queryParams = Map.of("title", "matrix");
 
-        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.eq(SearchResponse.class)))
+        Mockito.when(
+                restTemplate.getForObject(
+                        Mockito.any(URI.class),
+                        Mockito.eq(SearchResponse.class)))
                 .thenThrow(new RestClientException("Erro."));
 
         Assertions.assertThrows(RestClientException.class, () -> {
             service.searchMovies(queryParams, 1);
         });
+    }
+
+    @Test
+    void givenBucketExceededThenThrowsRateLimitExceededException() {
+        Mockito.when(bucket.tryConsume(1)).thenReturn(false);
+
+        Map<String, String> queryParams = Map.of("title", "matrix");
+
+        Assertions.assertThrows(RateLimitExceededException.class, () -> {
+            service.searchMovies(queryParams, 1);
+        });
+
+        Mockito.verify(restTemplate, Mockito.never()).getForObject(Mockito.any(), Mockito.any());
     }
 }

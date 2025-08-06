@@ -37,4 +37,10 @@ public class ApiExceptionHandler {
         body.put("error", "Erro interno no servidor");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
+
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<String> handleRateLimitExceeded(RateLimitExceededException ex) {
+        logger.error("gateway.rate_limit.exceeded= {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(ex.getMessage());
+    }
 }

@@ -11,6 +11,9 @@ public class SearchResponse {
     @JsonProperty("totalResults")
     private String totalResults;
 
+    @JsonProperty("Error")
+    private String error;
+
     public void setMovies(List<MovieResponse> movies) {
         this.movies = movies;
     }
@@ -28,4 +31,11 @@ public class SearchResponse {
     }
 
 
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
+    }
 }

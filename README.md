@@ -37,4 +37,5 @@ Na raiz do projeto (onde está o docker-compose.yml):
 docker-compose up --build
 ```
 A aplicação estará disponível em: http://localhost:3000
+
 O Swagger pode ser acessada em: http://localhost:8080/swagger-ui.html

@@ -94,7 +94,7 @@ Pendências:
     - Adicionar opção de detalhe de plot (curto ou completo). [x]
     - Adicionar paginação. [x]
     - Adicionar cache para não ficar enviando várias requisições ao OMDB. [x]
-    - Adicionar Rate-Limit. []
+    - Adicionar Rate-Limit. [x]
     - Testar o cache. [x]
     - Refinar validações e tratamento de erros. [x]
     - Adicionar Logs. [x]
@@ -105,7 +105,7 @@ Pendências:
     - Mostrar detalhes ao selecionar produção. [x]
     - Adicionar feedback de carregamento. [x]
     - Melhorar visual. [x]
-    - Salvar busca ao sair do detalhe da produção. []
+    - Salvar busca ao sair do detalhe da produção. [x]
 - Integração:
     - Dockerizar o front. [x]
     - Testar gateway. [x]
